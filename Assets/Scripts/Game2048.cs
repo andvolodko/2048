@@ -7,8 +7,8 @@ public class Game2048 : MonoBehaviour
 
 		private const float CELL_MARGIN = 2.2f;
 		private const int FOUR_CELL_PROBABILITY = 5; // 1 from 5
-		private const int CELLS_W = 6;
-		private const int CELLS_H = 4;
+		static public int CELLS_W = 4;
+		static public int CELLS_H = 4;
 		private const string CELLS_S = ";";
 		private const string MOVE_UP = "up";
 		private const string MOVE_DOWN = "down";
@@ -22,6 +22,7 @@ public class Game2048 : MonoBehaviour
 		private Vector3 downEndPosition;
 		private Vector3 nullPosition = new Vector3 (0, 0, 0);
 		public GameObject cellTemplate;
+		public GameObject cellBgTemplate;
 		private int playerScore = 0;
 		private int playerScoreBest = 0;
 		private TextMesh scoreText;
@@ -37,13 +38,13 @@ public class Game2048 : MonoBehaviour
 				scoreText = score.GetComponentInChildren<TextMesh> ();
 				GameObject scoreBest = GameObject.Find ("scoreBest");
 				scoreBestText = scoreBest.GetComponentInChildren<TextMesh> ();
+				playerScoreBest = PlayerPrefs.GetInt ("Best", 0);
+				scoreBestText.text = playerScoreBest.ToString ();
 		}
 
 		void prepareBG ()
 		{
-				GameObject cellBgTemplate;
 				GameObject newObject;
-				cellBgTemplate = GameObject.Find ("cellBg");
 				Quaternion objectRot = cellBgTemplate.transform.rotation;
 				for (int i = 0; i < CELLS_W; i++) {
 						for (int j = 0; j < CELLS_H; j++) {
@@ -53,7 +54,6 @@ public class Game2048 : MonoBehaviour
 								newObject = (GameObject)Object.Instantiate (cellBgTemplate, objectPos, objectRot);
 						}
 				}
-				GameObject.Destroy (cellBgTemplate);
 		}
 	
 		void addCells (int toAdd, bool fourCellToo)
@@ -137,32 +137,51 @@ public class Game2048 : MonoBehaviour
 				moveInProgress = true;
 				if (side == MOVE_RIGHT) {
 						Debug.Log ("Move right");
-						for (int i = CELLS_W-1; i >= 0; i--) {
-								for (int j = 0; j < CELLS_H; j++) {
-										calcStep (i, j, 1, 0);
-								}
-						}
+						for (int i = CELLS_W-1; i >= 0; i--) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcMoveStep (i, j, 1, 0);
+						for (int i = CELLS_W-1; i >= 0; i--) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcUnionStep (i, j, 1, 0);
+						for (int i = CELLS_W-1; i >= 0; i--) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcMoveStep (i, j, 1, 0);
+						
 				} else if (side == MOVE_LEFT) {
 						Debug.Log ("Move left");
-						for (int i = 0; i < CELLS_W; i++) {
-								for (int j = 0; j < CELLS_H; j++) {
-										calcStep (i, j, -1, 0);
-								}
-						}
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcMoveStep (i, j, -1, 0);
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcUnionStep (i, j, -1, 0);
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcMoveStep (i, j, -1, 0);
+						
 				} else if (side == MOVE_DOWN) {
 						Debug.Log ("Move down");
-						for (int i = 0; i < CELLS_W; i++) {
-								for (int j = CELLS_H-1; j >= 0; j--) {
-										calcStep (i, j, 0, 1);
-								}
-						}
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = CELLS_H-1; j >= 0; j--) 
+										calcMoveStep (i, j, 0, 1);
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = CELLS_H-1; j >= 0; j--) 
+										calcUnionStep (i, j, 0, 1);
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = CELLS_H-1; j >= 0; j--) 
+										calcMoveStep (i, j, 0, 1);
+						
 				} else if (side == MOVE_UP) {
 						Debug.Log ("Move up");
-						for (int i = 0; i < CELLS_W; i++) {
-								for (int j = 0; j < CELLS_H; j++) {
-										calcStep (i, j, 0, -1);
-								}
-						}
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcMoveStep (i, j, 0, -1);
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcUnionStep (i, j, 0, -1);
+						for (int i = 0; i < CELLS_W; i++) 
+								for (int j = 0; j < CELLS_H; j++) 
+										calcMoveStep (i, j, 0, -1);
 				}
 
 				if (moveSuccess) {
@@ -186,16 +205,19 @@ public class Game2048 : MonoBehaviour
 		{
 				addCells (1, true);
 		}
-
-		void calcStep (int i, int j, int addI, int addJ)
+	
+		void calcMoveStep (int i, int j, int addI, int addJ)
 		{
 				string key = i + CELLS_S + j;
 				if (cells.ContainsKey (key))
 						tryMove (cells [key], i, j, addI, addJ);
+		}
+
+		void calcUnionStep (int i, int j, int addI, int addJ)
+		{
+				string key = i + CELLS_S + j;
 				if (cells.ContainsKey (key))
 						tryUnion (cells [key], i, j, addI, addJ);
-				if (cells.ContainsKey (key))
-						tryMove (cells [key], i, j, addI, addJ);
 		}
 
 		void tryMove (GameObject gameObject, int i, int j, int addI, int addJ)
@@ -249,17 +271,29 @@ public class Game2048 : MonoBehaviour
 				if (playerScore > playerScoreBest) {
 						playerScoreBest = playerScore;
 						scoreBestText.text = scoreText.text;
+						PlayerPrefs.SetInt ("Best", playerScoreBest);
+						Kongregate.SubmitScore (playerScoreBest);
 				}
 		}
 
 		public void NewGame ()
 		{
+				GameObject[] staticObject = GameObject.FindGameObjectsWithTag ("Bg");
+				foreach (GameObject obj in staticObject) {
+						GameObject.Destroy (obj);
+				}
 				foreach (var item in cells.Values) {
 						GameObject.Destroy (item);
 				}
 				cells = new Dictionary<string, GameObject> ();
+				prepareBG ();
 				addCells (2, false);
 				updateScore (0);
+		}
+
+		public void SubmitScore ()
+		{
+				Application.ExternalCall ("kongregate.stats.submit", "Score", playerScoreBest);
 		}
 
 }
