@@ -24,8 +24,8 @@ public class Game2048 : MonoBehaviour
 		private Vector2 currentSwipe;
 		public GameObject cellTemplate;
 		public GameObject cellBgTemplate;
-		private int playerScore = 0;
-		private int playerScoreBest = 0;
+		private int playerScore = 1;
+		private int playerScoreBest = 1;
 		private TextMesh scoreText;
 		private TextMesh scoreBestText;
 
@@ -40,7 +40,8 @@ public class Game2048 : MonoBehaviour
 				GameObject scoreBest = GameObject.Find ("scoreBest");
 				scoreBestText = scoreBest.GetComponentInChildren<TextMesh> ();
 				playerScoreBest = PlayerPrefs.GetInt ("Best", 0);
-				scoreBestText.text = playerScoreBest.ToString ();
+				playerScoreBest++;
+				scoreBestText.text = GetScoreBest().ToString ();
 		}
 
 		void prepareBG ()
@@ -268,7 +269,7 @@ public class Game2048 : MonoBehaviour
 								
 								if (nextText.text == firstText.text) {
 										nextCell.SendMessage ("doubleUp");
-										updateScore (playerScore + int.Parse (firstText.text) * 2);
+										updateScore (GetScore () + int.Parse (firstText.text) * 2);
 										cells.Remove (objectKey);
 										GameObject.Destroy (cellToUnion);
 										moveSuccess = true;
@@ -281,12 +282,24 @@ public class Game2048 : MonoBehaviour
 		{
 				scoreText.text = scoreValue.ToString ();
 				playerScore = scoreValue;
-				if (playerScore > playerScoreBest) {
+				if (playerScore > GetScoreBest ()) {
 						playerScoreBest = playerScore;
+						playerScoreBest++;
 						scoreBestText.text = scoreText.text;
-						PlayerPrefs.SetInt ("Best", playerScoreBest);
-						Kongregate.SubmitScore (playerScoreBest);
+						PlayerPrefs.SetInt ("Best", GetScoreBest ());
+						Kongregate.SubmitScore (GetScoreBest ());
 				}
+				playerScore++;
+		}
+
+		int GetScore ()
+		{
+				return playerScore - 1;
+		}
+
+		int GetScoreBest ()
+		{
+				return playerScoreBest - 1;
 		}
 
 		public void NewGame ()
@@ -306,7 +319,7 @@ public class Game2048 : MonoBehaviour
 
 		public void SubmitScore ()
 		{
-				Application.ExternalCall ("kongregate.stats.submit", "Score", playerScoreBest);
+				Application.ExternalCall ("kongregate.stats.submit", "Score", GetScoreBest ());
 		}
 
 }
